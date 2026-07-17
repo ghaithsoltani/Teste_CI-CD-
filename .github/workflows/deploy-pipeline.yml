@@ -1,4 +1,4 @@
-name: CI Pipeline - Deployment Failure
+name: CI Pipeline - Deployment Fixed
 
 on:
   push:
@@ -29,14 +29,33 @@ jobs:
       - name: Build Docker Image
         run: docker build -t prod-app .
 
-      #  Run container
+      # Run container
       - name: Run Container
         run: docker run -d -p 5001:5001 --name prod-container prod-app
 
-      # Wait for app (simple delay)
-      - name: Wait for App
-        run: sleep 5
+      # Wait for app AND verify it actually responds (real check, not blind sleep)
+      - name: Wait for App (Fail if not ready)
+        run: |
+          for i in {1..10}; do
+            if curl -s http://localhost:5001; then
+              echo "App is up!"
+              exit 0
+            fi
+            echo "Waiting for app..."
+            sleep 2
+          done
+          echo "App failed to start"
+          exit 1
 
-      # SUCCESS (intentional mistake)
+      # Real health check — fails the pipeline if app returns an error status
+      - name: Real Health Check
+        run: curl -f http://localhost:5001
+
+      # Only reached if the checks above passed
       - name: Deployment Success Message
         run: echo "Deployment Successful"
+
+      # Always cleanup, even if a previous step failed
+      - name: Cleanup container
+        if: always()
+        run: docker stop prod-container && docker rm prod-container
