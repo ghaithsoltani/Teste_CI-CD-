@@ -31,13 +31,13 @@ jobs:
 
       # Run container
       - name: Run Container
-        run: docker run -d -p 5001:5001 --name prod-container prod-app
+        run: docker run -d -p 5000:5000 --name prod-container prod-app
 
       # Wait for app AND verify it actually responds (real check, not blind sleep)
       - name: Wait for App (Fail if not ready)
         run: |
           for i in {1..10}; do
-            if curl -s http://localhost:5001; then
+            if curl -s http://localhost:5000; then
               echo "App is up!"
               exit 0
             fi
