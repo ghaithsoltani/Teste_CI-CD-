@@ -49,7 +49,7 @@ jobs:
 
       # Real health check — fails the pipeline if app returns an error status
       - name: Real Health Check
-        run: curl -f http://localhost:5001
+        run: curl -f http://localhost:5000
 
       # Only reached if the checks above passed
       - name: Deployment Success Message
